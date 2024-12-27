@@ -37,15 +37,28 @@ const handleDataValues = (data) => {
     const array = handleData(data);
     const idxValues = array.map((_, index) => index);
     const valuesArr = array.filter(value => value === 0);
+    const intValuesArr = array.filter(value => value > 0);
 
     if(valuesArr.length === 1) {
         if(array.indexOf(0) === 0) {
             return joinArray(idxValues);
         }
 
-        if(array.indexOf(0) === array[array.length - 1]) {
+        if(array.indexOf(0) === array.length - 1) {
             return joinArray(idxValues.reverse());
         }
+
+        if(array.indexOf(0) > 0 && array.indexOf(0) < array[array.length - 1]) {
+            return joinArray([
+                ...[...array].slice(0, array.indexOf(0)).map((_, index) => index + 1).reverse(),
+                0,
+                ...[...array].slice(array.indexOf(0) + 1).map((_, index) => index + 1)
+            ]);
+        }
+    }
+
+    if(intValuesArr.length === 1) {
+        return joinArray(array.map(value => Boolean(value) ? 1 : 0));
     }
 
     if(valuesArr.length === array.length) {
