@@ -1,7 +1,8 @@
-import handleDataValues from './src/sprint-1-task-1.js';
+import handleDataValues from './src/sprint-1/task-1-1.js';
 
 // sprint 1, task 1
 const inputValues = [
+    '0',
     '9 8 98 99 0 1 2 789',
     '64 68 37 11 77 80 48 82 0', // 8 7 6 5 4 3 2 1 0
     '99 0 100 72 43 49 0 51 19 61 93 31', // 1 0 1 2 1 2 0 1 2 3 4 5
@@ -13,6 +14,7 @@ const inputValues = [
     '0 7 9 4 8 20', // 0 1 2 3 4 5
 ];
 const outputValues = [
+    '0',
     '4 3 2 1 0 1 2 3',
     '8 7 6 5 4 3 2 1 0',
     '1 0 1 2 2 1 0 1 2 3 4 5',

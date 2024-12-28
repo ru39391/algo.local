@@ -3,17 +3,15 @@ const handleData = (data) => data.toString().trim().split(' ').map(Number);
 const sliceArr = (arr, [start, end], isReversed = false) => {
     const array = [];
 
-    arr.forEach((item, index) => {
+    for (let i = 0; i < arr.length; i++) {
+        const item = arr[i];
+
         if(typeof start === 'number' && typeof end === 'number') {
-            if(index >= start && index < end) {
-                isReversed ? array.unshift(item) : array.push(item);
-            }
+            if(i >= start && i < end) isReversed ? array.unshift(item) : array.push(item);
         } else {
-            if(index >= start) {
-                isReversed ? array.unshift(item) : array.push(item);
-            }
+            if(i >= start) isReversed ? array.unshift(item) : array.push(item);
         }
-    });
+    }
 
     return array;
 };
@@ -22,11 +20,13 @@ const setValuesData = (array) => {
     const arr = [];
     const values = [];
 
-    array.forEach((value, index) => {
-        arr.push({value, defaultIdx: index});
+    for (let i = 0; i < array.length; i++) {
+        const value = array[i];
 
-        if(value === 0) values.push(index);
-    });
+        arr.push({value, defaultIdx: i});
+
+        if(value === 0) values.push(i);
+    }
 
     return { arr, values };
 };
@@ -34,13 +34,15 @@ const setValuesData = (array) => {
 const handleValues = ({arr, values}) => {
     const array = [];
 
-    arr.forEach(({ defaultIdx, value }) => {
+    for (let i = 0; i < arr.length; i++) {
+        const { defaultIdx, value } = arr[i];
+
         if(value === 0 && values.indexOf(defaultIdx) !== values.length - 1) {
             array.push(
                 sliceArr(arr, [defaultIdx + 1, values[values.indexOf(defaultIdx) + 1]])
             );
         }
-    });
+    }
 
     return array;
 };
@@ -48,21 +50,30 @@ const handleValues = ({arr, values}) => {
 const setIdx = (arr) => {
     const array = [];
 
-    arr.forEach((item, index) => array.push({ ...item, idx: index + 1 }));
+    for (let i = 0; i < arr.length; i++) {
+        array.push({ ...arr[i], idx: i + 1 });
+    }
 
     return array;
 };
 
-const handleArray = (arr) => arr.length % 2 === 0
-    ? [
-        setIdx(sliceArr(arr, [0, arr.length / 2])),
-        setIdx(sliceArr(arr, [arr.length / 2], true))
-    ].flat()
-    : [
-        setIdx(sliceArr(arr, [0, (arr.length - 1) / 2])),
-        [{ ...arr[(arr.length - 1) / 2], idx: (arr.length - 1) / 2 + 1 }],
-        setIdx(sliceArr(arr, [(arr.length - 1) / 2 + 1], true))
-    ].flat();
+const handleArray = (arr) => {
+    const evenLengthValue = arr.length / 2;
+    const oddLengthValue = (arr.length - 1) / 2;
+
+    const array = arr.length % 2 === 0
+        ? [
+            setIdx(sliceArr(arr, [0, evenLengthValue])),
+            setIdx(sliceArr(arr, [evenLengthValue], true))
+        ]
+        : [
+            setIdx(sliceArr(arr, [0, oddLengthValue])),
+            [{ ...arr[oddLengthValue], idx: oddLengthValue + 1 }],
+            setIdx(sliceArr(arr, [oddLengthValue + 1], true))
+        ]
+    
+    return array.flat();
+};
 
 const joinArray = (arr) => arr.join(' ')
 
@@ -76,57 +87,65 @@ const handleDataValues = (data) => {
     const startIdx = array.indexOf(0);
     const endIdx = array.length - 1;
 
-    array.forEach(value => value > 0 ? intValuesArr.push(value) : valuesArr.push(value))
-
-    if(valuesArr.length === 1) {
-        if(startIdx === 0) {
-            array.forEach((_, index) => finalValues.push(index));
-
-            return joinArray(finalValues);
-        }
-
-        if(startIdx === endIdx) {
-            array.forEach((_, index) => finalValues.unshift(index));
-
-            return joinArray(finalValues);
-        }
-
-        if(startIdx > 0 && startIdx < array[endIdx]) {
-            array.forEach((_, index) => {
-                if(index < startIdx) finalValues.unshift(index + 1);
-            });
-
-            finalValues.push(0);
-
-            array.forEach((_, index) => {
-                if(index >= startIdx + 1) finalValues.push(index - startIdx);
-            });
-
-            return joinArray(finalValues);
-        }
+    for (let i = 0; i < array.length; i++) {
+        array[i] > 0 ? intValuesArr.push(array[i]) : valuesArr.push(array[i]);
     }
 
-    if(intValuesArr.length === 1) {
-        array.forEach(value => finalValues.push(Boolean(value) ? 1 : 0));
+    if(valuesArr.length === array.length) {
+        for (let i = 0; i < array.length; i++) {
+            finalValues.push(0);
+        }
 
         return joinArray(finalValues);
     }
 
-    if(valuesArr.length === array.length) {
-        array.forEach(() => finalValues.push(0));
+    if(intValuesArr.length === 1) {
+        for (let i = 0; i < array.length; i++) {
+            finalValues.push(Boolean(array[i]) ? 1 : 0);
+        }
+
+        return joinArray(finalValues);
+    }
+
+    if(valuesArr.length === 1) {
+        if(startIdx === 0) {
+            for (let i = 0; i < array.length; i++) {
+                finalValues.push(i);
+            }
+        }
+
+        if(startIdx === endIdx) {
+            for (let i = 0; i < array.length; i++) {
+                finalValues.unshift(i);
+            }
+        }
+
+        if(startIdx > 0 && startIdx < array[endIdx]) {
+            for (let i = 0; i < array.length; i++) {
+                if(i < startIdx) finalValues.unshift(i + 1);
+            }
+
+            finalValues.push(0);
+
+            for (let i = 0; i < array.length; i++) {
+                if(i >= startIdx + 1) finalValues.push(i - startIdx);
+            }
+        }
 
         return joinArray(finalValues);
     }
 
     const {arr, values} = setValuesData(array);
 
-    arr.forEach((item, index) => {
-        if(index < values[0]) startValues.unshift(item);
-    });
-
-    arr.forEach((item, index) => {
-        if(index > values[values.length - 1]) endValues.push(item);
-    });
+    for (let i = 0; i < arr.length; i++) {
+        if(i < values[0]) {
+            startValues.unshift(arr[i]);
+        }
+        
+        if(i > values[values.length - 1]) {
+            endValues.push(arr[i]);
+        }
+    }
 
     const handledValues = [
         setIdx(startValues),
@@ -134,11 +153,11 @@ const handleDataValues = (data) => {
         setIdx(endValues)
     ].flat();
 
-    arr.forEach((item, index) => {
+    for (let i = 0; i < arr.length; i++) {
         finalValues.push(
-            item.value > 0 ? handledValues.flat().find(({ defaultIdx, value }) => defaultIdx === index && value === item.value).idx : 0
+            arr[i].value > 0 ? handledValues.find(({ defaultIdx, value }) => defaultIdx === i && value === arr[i].value).idx : 0
         );
-    });
+    }
 
     return joinArray(finalValues);
 };
