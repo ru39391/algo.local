@@ -1,6 +1,10 @@
 const handleData = (data) => data.toString().trim().split(' ').map(Number);
 
-const sliceArr = (arr, [start, end]) => typeof start === 'number' && typeof end === 'number' ? arr.slice(start, end) :  arr.slice(start);
+const sliceArr = (arr, [start, end], isReversed = false) => {
+    const array = typeof start === 'number' && typeof end === 'number' ? arr.slice(start, end) :  arr.slice(start);
+
+    return isReversed ? array.reverse() : array;
+};
 
 const setValuesData = (array) => array.reduce(
     (acc, value, index) => value === 0
@@ -20,22 +24,30 @@ const handleValues = ({arr, values}) => arr.reduce(
 
 const setIdx = (arr) => arr.map((data, index) => ({ ...data, idx: index + 1 }));
 
-const handleArray = (arr) => arr.length % 2 === 0
-    ? [
-        ...setIdx([...arr].slice(0, [...arr].length / 2)),
-        ...setIdx([...arr].slice([...arr].length / 2).reverse())
-    ]
-    : [
-        ...setIdx([...arr].slice(0, ([...arr].length - 1) / 2)),
-        ...[{ ...[...arr][([...arr].length - 1) / 2], idx: ([...arr].length - 1) / 2 + 1 }],
-        ...setIdx([...arr].slice(([...arr].length - 1) / 2 + 1).reverse())
-    ];
+const handleArray = (arr) => {
+    const evenLengthValue = arr.length / 2;
+    const oddLengthValue = (arr.length - 1) / 2;
 
-const joinArray = (arr) => arr.join(' ')
+    return arr.length % 2 === 0
+        ? [
+            ...setIdx(sliceArr(arr, [0, evenLengthValue])),
+            ...setIdx(sliceArr(arr, [evenLengthValue], true))
+        ]
+        : [
+            ...setIdx(sliceArr(arr, [0, oddLengthValue])),
+            { ...arr[oddLengthValue], idx: oddLengthValue + 1 },
+            ...setIdx(sliceArr(arr, [oddLengthValue + 1], true))
+        ]
+};
+
+const joinArray = (arr) => arr.join(' ');
+
+const setIdxArr = (arr, isIncreased = false) => arr.map((_, index) => isIncreased ? index + 1 : index);
 
 const handleDataValues = (data) => {
     const array = handleData(data);
-    const idxValues = array.map((_, index) => index);
+    const startIdx = array.indexOf(0);
+    const endIdx = array.length - 1;
     const valuesArr = array.filter(value => value === 0);
     const intValuesArr = array.filter(value => value > 0);
 
@@ -48,19 +60,19 @@ const handleDataValues = (data) => {
     }
 
     if(valuesArr.length === 1) {
-        if(array.indexOf(0) === 0) {
-            return joinArray(idxValues);
+        if(startIdx === 0) {
+            return joinArray(setIdxArr(array));
         }
 
-        if(array.indexOf(0) === array.length - 1) {
-            return joinArray(idxValues.reverse());
+        if(startIdx === endIdx) {
+            return joinArray(setIdxArr(array).reverse());
         }
 
-        if(array.indexOf(0) > 0 && array.indexOf(0) < array[array.length - 1]) {
+        if(startIdx > 0 && startIdx < array[endIdx]) {
             return joinArray([
-                ...[...array].slice(0, array.indexOf(0)).map((_, index) => index + 1).reverse(),
+                ...setIdxArr(sliceArr(array, [0, startIdx]), true).reverse(),
                 0,
-                ...[...array].slice(array.indexOf(0) + 1).map((_, index) => index + 1)
+                ...setIdxArr(sliceArr(array, [startIdx + 1]), true)
             ]);
         }
     }
