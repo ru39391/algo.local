@@ -6,23 +6,26 @@ const sliceArr = (arr, [start, end], isReversed = false) => {
     return isReversed ? array.reverse() : array;
 };
 
-const setValuesData = (array) => array.reduce(
-    (acc, value, index) => value === 0
-        ? {...acc, arr: [...acc.arr, {value, defaultIdx: index}], values: [...acc.values, index]}
-        : {...acc, arr: [...acc.arr, {value, defaultIdx: index}]},
-    {
-        arr: [],
-        values: []
-    }
-);
+const setValuesData = (array) => {
+    const arr = [];
+    const values = [];
+
+    array.forEach((value, index) => {
+        arr.push({value, defaultIdx: index});
+
+        if(value === 0) values.push(index);
+    });
+
+    return { arr, values };
+};
+
+const setIdx = (arr) => arr.map((data, index) => ({ [data.defaultIdx]: index + 1 }));
 
 const handleValues = ({arr, values}) => arr.reduce(
-        (acc, { defaultIdx, value }) => value === 0 && values.indexOf(defaultIdx) !== values.length - 1
-            ? [...acc, sliceArr(arr, [defaultIdx + 1, values[values.indexOf(defaultIdx) + 1]])]
-            : acc, []
+    (acc, { defaultIdx, value }) => value === 0 && values.indexOf(defaultIdx) !== values.length - 1
+        ? [...acc, sliceArr(arr, [defaultIdx + 1, values[values.indexOf(defaultIdx) + 1]])]
+        : acc, []
     ).filter(item => item.length);
-
-const setIdx = (arr) => arr.map((data, index) => ({ ...data, idx: index + 1 }));
 
 const handleArray = (arr) => {
     const evenLengthValue = arr.length / 2;
@@ -30,14 +33,14 @@ const handleArray = (arr) => {
 
     return arr.length % 2 === 0
         ? [
-            ...setIdx(sliceArr(arr, [0, evenLengthValue])),
-            ...setIdx(sliceArr(arr, [evenLengthValue], true))
-        ]
+            setIdx(sliceArr(arr, [0, evenLengthValue])),
+            setIdx(sliceArr(arr, [evenLengthValue], true))
+        ].flat()
         : [
-            ...setIdx(sliceArr(arr, [0, oddLengthValue])),
-            { ...arr[oddLengthValue], idx: oddLengthValue + 1 },
-            ...setIdx(sliceArr(arr, [oddLengthValue + 1], true))
-        ]
+            setIdx(sliceArr(arr, [0, oddLengthValue])),
+            { [arr[oddLengthValue].defaultIdx]: oddLengthValue + 1 },
+            setIdx(sliceArr(arr, [oddLengthValue + 1], true))
+        ].flat();
 };
 
 const joinArray = (arr) => arr.join(' ');
@@ -45,6 +48,7 @@ const joinArray = (arr) => arr.join(' ');
 const setIdxArr = (arr, isIncreased = false) => arr.map((_, index) => isIncreased ? index + 1 : index);
 
 const handleDataValues = (data) => {
+    const finalValues = [];
     const array = handleData(data);
     const startIdx = array.indexOf(0);
     const endIdx = array.length - 1;
@@ -78,31 +82,24 @@ const handleDataValues = (data) => {
     }
 
     const {arr, values} = setValuesData(array);
-    const handledValues = Array(arr.length);
-    const leftValues = setIdxArr(arr.filter((_, index) => index < values[0]), true).reverse();
-    const rightValues = setIdxArr(arr.filter((_, index) => index > values[values.length - 1]), true).reverse();
+    const handledValues = handleValues({arr, values})
+        .map((item) => item.length === 1 ? { [item[0].defaultIdx]: 1 } : handleArray(item))
+        .flat()
+        .reduce((acc, item) => ({...acc, ...item}), {});
 
-    leftValues.forEach((value, index) => {
-        handledValues[index] = value;
-    });
-    rightValues.forEach((value, index) => {
-        handledValues.splice(-1 * index - 1, 1, value);
-    });
-
-    [
-        ...values,
-        ...handleValues({arr, values})
-            .map((item) => item.length === 1 ? setIdx(item) : handleArray(item))
-            .flat()
-    ].forEach((item) => {
-        if(typeof item === 'number') {
-            handledValues[item] = 0;
+    arr.forEach((_, index) => {
+        if(index < values[0]) {
+            finalValues[index] = values[0] - index;
+        } else if (index > values[values.length - 1]) {
+            finalValues[index] = index - values[values.length - 1];
+        } else if (values.includes(index)) {
+            finalValues[index] = 0;
         } else {
-            handledValues[item.defaultIdx] = item.idx;
+            finalValues[index] = handledValues[index];
         }
     });
 
-    return joinArray(handledValues);
+    return joinArray(finalValues);
 };
 
 export default handleDataValues;
