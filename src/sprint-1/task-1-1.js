@@ -17,10 +17,10 @@ const setValuesData = (array) => array.reduce(
 );
 
 const handleValues = ({arr, values}) => arr.reduce(
-    (acc, { defaultIdx, value }) => value === 0 && values.indexOf(defaultIdx) !== values.length - 1
-        ? [...acc, sliceArr(arr, [defaultIdx + 1, values[values.indexOf(defaultIdx) + 1]])]
-        : acc, []
-);
+        (acc, { defaultIdx, value }) => value === 0 && values.indexOf(defaultIdx) !== values.length - 1
+            ? [...acc, sliceArr(arr, [defaultIdx + 1, values[values.indexOf(defaultIdx) + 1]])]
+            : acc, []
+    ).filter(item => item.length);
 
 const setIdx = (arr) => arr.map((data, index) => ({ ...data, idx: index + 1 }));
 
@@ -78,22 +78,31 @@ const handleDataValues = (data) => {
     }
 
     const {arr, values} = setValuesData(array);
-    const leftValues = arr.reduce((acc, item, index) => index < values[0] ? [...acc, item] : acc, []);
-    const rightValues = arr.reduce((acc, item, index) => index > values[values.length - 1] ? [...acc, item] : acc, []);
-    const handledValues = [
-        ...setIdx(leftValues.reverse()),
-        ...handleValues({arr, values})
-            .map(
-                (item) => item.length === 1 ? setIdx(item) : handleArray(item)
-            ).reduce(
-                (acc, item) => [...acc, ...item], []
-            ),
-        ...setIdx(rightValues)
-    ];
+    const handledValues = Array(arr.length);
+    const leftValues = setIdxArr(arr.filter((_, index) => index < values[0]), true).reverse();
+    const rightValues = setIdxArr(arr.filter((_, index) => index > values[values.length - 1]), true).reverse();
 
-    return joinArray(
-        arr.map((item, index) => item.value > 0 ? handledValues.find(({ defaultIdx, value }) => defaultIdx === index && value === item.value).idx : 0)
-    );
+    leftValues.forEach((value, index) => {
+        handledValues[index] = value;
+    });
+    rightValues.forEach((value, index) => {
+        handledValues.splice(-1 * index - 1, 1, value);
+    });
+
+    [
+        ...values,
+        ...handleValues({arr, values})
+            .map((item) => item.length === 1 ? setIdx(item) : handleArray(item))
+            .flat()
+    ].forEach((item) => {
+        if(typeof item === 'number') {
+            handledValues[item] = 0;
+        } else {
+            handledValues[item.defaultIdx] = item.idx;
+        }
+    });
+
+    return joinArray(handledValues);
 };
 
 export default handleDataValues;
