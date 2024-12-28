@@ -19,28 +19,24 @@ const setValuesData = (array) => {
     return { arr, values };
 };
 
-const setIdx = (arr) => arr.map((data, index) => ({ [data.defaultIdx]: index + 1 }));
-
 const handleValues = ({arr, values}) => arr.reduce(
     (acc, { defaultIdx, value }) => value === 0 && values.indexOf(defaultIdx) !== values.length - 1
         ? [...acc, sliceArr(arr, [defaultIdx + 1, values[values.indexOf(defaultIdx) + 1]])]
         : acc, []
     ).filter(item => item.length);
 
+const isEvenArr = ({ array, index, evenLengthValue }) => array.length % 2 === 0 ? index < evenLengthValue : index <= evenLengthValue
+
 const handleArray = (arr) => {
     const evenLengthValue = arr.length / 2;
-    const oddLengthValue = (arr.length - 1) / 2;
 
-    return arr.length % 2 === 0
-        ? [
-            setIdx(sliceArr(arr, [0, evenLengthValue])),
-            setIdx(sliceArr(arr, [evenLengthValue], true))
-        ].flat()
-        : [
-            setIdx(sliceArr(arr, [0, oddLengthValue])),
-            { [arr[oddLengthValue].defaultIdx]: oddLengthValue + 1 },
-            setIdx(sliceArr(arr, [oddLengthValue + 1], true))
-        ].flat();
+    return arr.map(
+        ({ defaultIdx }, index, array) => ({
+            [defaultIdx]: isEvenArr({ array, index, evenLengthValue })
+                ? index + 1
+                : index - 2 * (index - evenLengthValue)
+        })
+    );
 };
 
 const joinArray = (arr) => arr.join(' ');
@@ -48,7 +44,6 @@ const joinArray = (arr) => arr.join(' ');
 const setIdxArr = (arr, isIncreased = false) => arr.map((_, index) => isIncreased ? index + 1 : index);
 
 const handleDataValues = (data) => {
-    const finalValues = [];
     const array = handleData(data);
     const startIdx = array.indexOf(0);
     const endIdx = array.length - 1;
@@ -87,15 +82,15 @@ const handleDataValues = (data) => {
         .flat()
         .reduce((acc, item) => ({...acc, ...item}), {});
 
-    arr.forEach((_, index) => {
+    const finalValues = arr.map((_, index) => {
         if(index < values[0]) {
-            finalValues[index] = values[0] - index;
+            return values[0] - index;
         } else if (index > values[values.length - 1]) {
-            finalValues[index] = index - values[values.length - 1];
+            return index - values[values.length - 1];
         } else if (values.includes(index)) {
-            finalValues[index] = 0;
+            return 0;
         } else {
-            finalValues[index] = handledValues[index];
+            return handledValues[index];
         }
     });
 
