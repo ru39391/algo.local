@@ -41,6 +41,27 @@ inputValues.forEach(
 /*
 const readline = require('readline');
 
+const rl = readline.createInterface({input: process.stdin});
+
+let lines = [];
+let str = '';
+
+rl.on('line', (input) => {
+  lines.push(input);
+
+  if (lines.length === 2) {
+    str = handleDataValues(lines);
+  }
+});
+
+rl.on('close', () => {
+  process.stdout.write(str.join(' '));
+});
+
+////
+
+const readline = require('readline');
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
