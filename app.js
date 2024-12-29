@@ -1,4 +1,4 @@
-import handleDataValues from './src/sprint-1/task-1-1.js';
+import handleDataValues from './src/sprint-1/task-1.js';
 
 // sprint 1, task 1
 const inputValues = [
@@ -39,6 +39,27 @@ inputValues.forEach(
 );
 
 /*
+const fs = require('fs');
+
+fs.readFile('input.txt', 'utf8', (err, data) => {
+  if (err) {
+    return;
+  }
+
+  const arr = handleDataValues(data.split(/\r?\n/));
+  //process.stdout.write(arr.join(' '));
+
+  const result = arr.join(' ');
+  
+  fs.writeFile('output.txt', result, (err) => {
+    if (err) {
+      return;
+    }
+  });
+});
+
+////
+
 const readline = require('readline');
 
 const rl = readline.createInterface({input: process.stdin});

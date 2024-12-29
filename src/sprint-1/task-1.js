@@ -169,7 +169,7 @@ const handleDataValues = (lines) => {
     const intValuesLength = arrLength - valuesArr.length;
 
     if(valuesArr.length === array.length) {
-        return array.map((_) => 0);
+        return array.fill(0);
     }
 
     if(intValuesLength === 1) {
