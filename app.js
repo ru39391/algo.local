@@ -26,8 +26,17 @@ const outputValues = [
     '0 1 2 3 4 5'
 ];
 
-//['5 8 9 12 15 26 30 0 0 55 0 0 67 0 76 80 82 0 0 98']
-inputValues.forEach((str, index) => console.log(handleDataValues(str) === outputValues[index], index, `'${handleDataValues(str)}'`));//str, 
+
+const joinArray = (arr) => arr.join(' ');
+
+inputValues.forEach(
+  (str, index) => {
+    const arr = [str.toString().trim().split(' ').map(Number).length, str];
+    const value = joinArray(handleDataValues(arr));
+
+    console.log(value === outputValues[index], index, value);
+  }
+);
 
 /*
 const readline = require('readline');
