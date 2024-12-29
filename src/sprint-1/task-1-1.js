@@ -1,12 +1,13 @@
 const handleData = (data) => data.toString().trim().split(' ').map(Number);
 
+const isEvenArr = ({ arr, index, evenLengthValue }) => arr.length % 2 === 0 ? index < evenLengthValue : index <= evenLengthValue;
+
 const handleResArray = (arr, isValues = false) => {
     const array = [];
     const evenLengthValue = arr.length / 2;
 
     arr.forEach((value, index) => {
-        const isEvenArr = arr.length % 2 === 0 ? index < evenLengthValue : index <= evenLengthValue;
-        const idx = isEvenArr ? index + 1 : index - 2 * (index - evenLengthValue);
+        const idx = isEvenArr({ arr, index, evenLengthValue }) ? index + 1 : index - 2 * (index - evenLengthValue);
 
         array.push(isValues ? idx : { [value]: idx })
     });
@@ -20,23 +21,12 @@ const handleResult = (values, isComplex = false) => {
     }
 
     const array = [];
-    const result = [];
 
     for(let i = values[0] + 1; i < values[1]; i++) {
         array.push(i);
     }
 
-    const isEvenArr = array.length % 2 === 0;
-    const evenLengthValue = array.length / 2;
-
-    array.forEach((value, index) => {
-        const isEvenItem =  isEvenArr ? index < evenLengthValue : index <= evenLengthValue;
-        const idx = isEvenItem ? index + 1 : index - 2 * (index - evenLengthValue);
-
-        result.push(isComplex ? { [value]: idx } : idx);
-    });
-
-    return isComplex ? [{[values[0]]: 0}, result, {[values[1]]: 0}].flat() : result;
+    return isComplex ? [{[values[0]]: 0}, ...handleResArray(array), {[values[1]]: 0}] : handleResArray(array, true);
 }
 
 const setLeftValues = (arr) => {
@@ -64,21 +54,27 @@ const setRightValues = (arr) => {
 }
 
 const handleComplexValues = (complexValues, plainValues) => {
-    if(!complexValues.length && !plainValues.length) {
+    if(!complexValues) {
         return [];
     }
 
-    const array = complexValues.map(item => handleResult(item, true));
+    const data = {};
+    const array = [];
 
-    const data = array.flat().reduce((acc, item) => {
-        const [key, value] = Object.entries(item)[0];
+    for(let i = 0; i < complexValues.length; i++) {
+        array.push(handleResult(complexValues[i], true));
+    }
 
-        return acc[key] === undefined ? {...acc, [key]: value} : acc
-    }, {});
+    // array.flat().reduce((acc, item) => acc[Object.keys(item)[0]] === undefined ? {...acc, [Object.keys(item)[0]]: Object.values(item)[0]} : acc, {});
+    for(let j = 0; j < array.flat().length; j++) {
+        const [key, value] = Object.entries(array.flat()[j])[0];
 
-    plainValues.forEach(item => {
-        if(data[item] === undefined) data[item] = 0;
-    })
+        if(data[key] === undefined) data[key] = value;
+    }
+
+    for(let k = 0; k < plainValues.length; k++) {
+        if(data[plainValues[k]] === undefined) data[plainValues[k]] = 0;
+    }
 
     return Object.values(data);
 }
@@ -99,12 +95,16 @@ const setValuesData = (array) => {
                 : {...acc, plainValues: [...acc.plainValues, item]},
             { complexValues: [], plainValues: [] }
         )
-        : { complexValues: [], plainValues: [] };
+        : { complexValues: null, plainValues: null };
 
     return values.length === 2
-        ? [leftValues, 0, handleResult(values), 0, rightValues]
-        : [leftValues, handleComplexValues(complexValues, plainValues), rightValues];
+        ? [leftValues, 0, handleResult(values), 0, rightValues].flat()
+        : [leftValues, handleComplexValues(complexValues, plainValues), rightValues].flat();
 };
+
+const joinArray = (arr) => arr.join(' ');
+
+const setIdxArr = (arr, isIncreased = false) => arr.map((_, index) => isIncreased ? index + 1 : index);
 
 const handleDataValues = (data) => {
     const array = handleData(data);
@@ -114,28 +114,28 @@ const handleDataValues = (data) => {
     const intValuesArr = array.filter(value => value > 0);
 
     if(valuesArr.length === array.length) {
-        return array.map((_) => 0);
+        return joinArray(array.map((_) => 0));
     }
 
     if(intValuesArr.length === 1) {
-        return array.map(value => Boolean(value) ? 1 : 0);
+        return joinArray(array.map(value => Boolean(value) ? 1 : 0));
     }
 
     if(valuesArr.length === 1) {
         if(startIdx === 0) {
-            return [0, setRightValues(array)].flat();
+            return joinArray(setIdxArr(array));
         }
 
         if(startIdx === endIdx) {
-            return [setLeftValues(array), 0].flat();
+            return joinArray(setIdxArr(array).reverse());
         }
 
         if(startIdx > 0 && startIdx < array[endIdx]) {
-            return [setLeftValues(array), 0, setRightValues(array)].flat();
+            return joinArray([setLeftValues(array), 0, setRightValues(array)].flat());
         }
     }
 
-    return setValuesData(array).flat() || [];
+    return joinArray(setValuesData(array) || null);
 };
 
 export default handleDataValues;

@@ -26,10 +26,8 @@ const outputValues = [
     '0 1 2 3 4 5'
 ];
 
-const joinArray = (arr) => arr.join(' ');
-
 //['5 8 9 12 15 26 30 0 0 55 0 0 67 0 76 80 82 0 0 98']
-inputValues.forEach((value, index) => console.log(joinArray(handleDataValues(value)) === outputValues[index], index, joinArray(handleDataValues(value))));//str, `'${handleDataValues(joinArray(arr))}'`
+inputValues.forEach((str, index) => console.log(handleDataValues(str) === outputValues[index], index, `'${handleDataValues(str)}'`));//str, 
 
 /*
 const readline = require('readline');
@@ -50,26 +48,5 @@ rl.on('line', (input) => {
     process.exit();
     rl.close();
   }
-});
-
-///////
-
-const readline = require('readline');
-
-const rl = readline.createInterface({input: process.stdin});
-
-let lines = [];
-let str = '';
-
-rl.on('line', (input) => {
-  lines.push(input);
-
-  if (lines.length === 2) {
-    str = handleDataValues(lines[1].toString().trim().split(' ').map(Number));
-  }
-});
-
-rl.on('close', () => {
-	process.stdout.write(str.join(' '));
 });
 */
